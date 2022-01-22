@@ -75,4 +75,18 @@ const addPatient = async(patient) => {
     }
 }
 
-module.exports = {getTest,updatePatient,getAdminCreds,getPatients,addPatient};
+const deletePatient = async(patientID) => {
+    let stream = await sql.connect(config);
+    logger.info("success connecting to stream\n");
+
+    let current_query = "DELETE FROM Patients where ID=" + patientID;
+                        
+    logger.info("Querying for " + current_query);
+    let response = await stream.request().query(current_query);
+    if(response && response.rowsAffected && response.rowsAffected[0] && response.rowsAffected[0] > 0) {
+        return "success";
+    } else {
+        logger.error("Something went wrong deleting the patient");
+    }
+}
+module.exports = {getTest,updatePatient,getAdminCreds,getPatients,addPatient,deletePatient};

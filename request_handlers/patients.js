@@ -11,4 +11,12 @@ async function addPatient(patient){
     }
 }
 
-module.exports = {addPatient};
+async function deletePatient(patientId){
+    var patientDeletedStatus = await db_sql_helper.deletePatient(JSON.parse(patientId));
+    if(!patientDeletedStatus || patientDeletedStatus != 'success'){
+        return {error: 'Patient delete error', result: null};
+    } else {
+        return {error: null, result: patientDeletedStatus};
+    }
+}
+module.exports = {addPatient, deletePatient};

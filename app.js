@@ -111,6 +111,26 @@ app.get('/insert', (req,res) => {
     
 })
 
+app.get('/delete', (req,res) => {
+    if(!req.query || !req.query.resource) { 
+        logger.error("Invalid request");
+        res.json({error: 'Invalid resource given', response: null});
+        return;
+    }
+    switch(req.query.resource) {
+        case 'patient': 
+            logger.info("shall delete patient ", req.query);
+            req_handlers.deletePatient(req.query.id).then(response => {
+                res.json(response);
+            })
+            break;
+        default: 
+            logger.error("Unknown resource on insert");
+            break;
+    }
+    
+})
+
 
 app.listen(port, () => {
     console.log(`App is running http://localhost:${port}`)
