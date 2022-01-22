@@ -5,7 +5,11 @@ const app = express()
 const port = 3000
 const db_sql_helper = require('./sqlDb/utils.js');
 var logger = require('nlogger').logger(module);
-    
+const gettersHandler = require('./request_handlers/get/patients');
+const req_handlers = require('./request_handlers/patients');
+
+const { json } = require('body-parser');
+
 app.use( function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
@@ -68,11 +72,51 @@ app.get('/', (req, res) => {
     }
 }) 
 
+app.get('/get', (req,res) => {
+    if(!req.query || !req.query.resource) {
+        logger.error("Resource missing");
+        res.json({error: 'No resource given', response: null});
+        return;
+    }
+    switch(req.query.resource) {
+        case 'patients':
+            gettersHandler.handlePatientsGetter(req).then(response => { 
+                res.json({error: response.error, response: response.result});
+            });
+            break;
+        default: 
+            logger.error('Given resource not found.');
+            res.json({error: 'Incorrect or missing given resource.', response: null});
+            break;
+    }
+
+})
+
+app.get('/insert', (req,res) => {
+    if(!req.query || !req.query.resource) { 
+        logger.error("Invalid request");
+        res.json({error: 'Invalid resource given', response: null});
+        return;
+    }
+    switch(req.query.resource) {
+        case 'patient': 
+            req_handlers.addPatient(req.query.patient).then(response => {
+                res.json(response);
+            })
+            break;
+        default: 
+            logger.error("Unknown resource on insert");
+            break;
+    }
+    
+})
+
 
 app.listen(port, () => {
     console.log(`App is running http://localhost:${port}`)
 
 })
+
 
 
 
