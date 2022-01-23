@@ -19,4 +19,23 @@ async function deletePatient(patientId){
         return {error: null, result: patientDeletedStatus};
     }
 }
-module.exports = {addPatient, deletePatient};
+
+async function updatePatient(patient){
+    var clearPatient = JSON.parse(patient);
+    var patientKeys = Object.keys(clearPatient);
+    for(var i=0;i<patientKeys.length;i++) {
+        var key = patientKeys[i];
+        logger.info(clearPatient[key]);
+        if(clearPatient[key] == '' || !clearPatient[key]) {
+            delete clearPatient[key];
+        } 
+    }
+    logger.info(clearPatient);
+    var patientUpdatedStatus = await db_sql_helper.updatePatient(clearPatient);
+    if(!patientUpdatedStatus || patientUpdatedStatus != 'success'){
+        return {error: 'Patient update error', result: null};
+    } else {
+        return {error: null, result: patientUpdatedStatus};
+    }
+}
+module.exports = {addPatient, deletePatient, updatePatient};

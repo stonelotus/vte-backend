@@ -14,12 +14,24 @@ const getTest = async() => {
 const updatePatient = async(patient) => {
     let stream = await sql.connect(config);
     logger.info("success connecting to stream\n");
-    let current_query = "UPDATE Patients SET first_name='" + patient.first_name + "'" + " WHERE ID=" + patient.id;
+    let current_query = "UPDATE Patients SET ";
+
+    if(patient.first_name) current_query += "first_name='" + patient.first_name + "',";
+    if(patient.last_name) current_query += "last_name='" + patient.last_name + "',";
+    if(patient.age) current_query += "age='"       + patient.age + "',";
+    if(patient.trial_start) current_query += "trial_start='"    + patient.trial_start + "',";
+    if(patient.trial_end) current_query += "trial_end='"      + patient.trial_end + "',";
+    if(patient.dose_number) current_query += "doses_received='" + patient.dose_number + "',";
+    if(patient.given_vaccine) current_query += "given_vaccines_ids='" + patient.given_vaccine + "'";
+
+    if(current_query[current_query.length-1] == ','){
+        current_query = current_query.slice(0, current_query.length - 1);
+    }
+    current_query += " where ID=" + patient.id;
+                                            
     
     logger.info("this is the query: ",current_query)
-    let clients = stream.request().query(current_query);
-    logger.info("nice clients: \n");
-    logger.info(clients);
+    let clients = await stream.request().query(current_query);
     return clients;
 }
 
@@ -89,4 +101,6 @@ const deletePatient = async(patientID) => {
         logger.error("Something went wrong deleting the patient");
     }
 }
+
+
 module.exports = {getTest,updatePatient,getAdminCreds,getPatients,addPatient,deletePatient};

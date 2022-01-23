@@ -131,6 +131,25 @@ app.get('/delete', (req,res) => {
     
 })
 
+app.get('/update', (req,res) => {
+    if(!req.query || !req.query.resource) { 
+        logger.error("Invalid request");
+        res.json({error: 'Invalid resource given', response: null});
+        return;
+    }
+    switch(req.query.resource) {
+        case 'patient': 
+            logger.info("shall update patient ", req.query);
+            req_handlers.updatePatient(req.query.patient).then(response => {
+                res.json(response);
+            })
+            break;
+        default: 
+            logger.error("Unknown resource on insert");
+            break;
+    }
+})
+
 
 app.listen(port, () => {
     console.log(`App is running http://localhost:${port}`)
