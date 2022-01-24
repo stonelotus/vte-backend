@@ -3,11 +3,36 @@ var logger = require('nlogger').logger(module);
 const db_sql_helper = require('../sqlDb/utils');
 
 async function addPatient(patient){
-    var patientAddedStatus = await db_sql_helper.addPatient(JSON.parse(patient));
+    logger.info("Adding patient..");
+
+    var parsedPatient = JSON.parse(patient);
+   
+    var patientAddedStatus = await db_sql_helper.addPatient(parsedPatient);
     if(!patientAddedStatus || patientAddedStatus != 'success'){
         return {error: 'Patient add error', result: null};
     } else {
-        return {error: null, result: patientAddedStatus};
+        var patientId = (await db_sql_helper.getComplexData("select p.ID from Patients p where p.last_name='" 
+                        + parsedPatient.last_name + "'and p.first_name='" + parsedPatient.first_name + "'"))[0]['ID'];
+                     
+
+        if(parsedPatient.conditions){
+            var conditions = parsedPatient.conditions.split(';');
+            delete parsedPatient.conditions;
+            for(var i=0;i<conditions.length;i++){
+                var query = "select count(*) from Conditions c where c.name = '" +conditions[i] + "'";
+                var conditionExists = (await db_sql_helper.getComplexData(query))[0][''];
+                logger.info(conditionExists);
+    
+                if(conditionExists) {
+                    var query = "insert into PatientCondition (patient_id, condition) VALUES ('" + 
+                                patientId + "', '" + conditions[i] + "')";
+                    await db_sql_helper.executeComplexQuery(query);
+                    logger.info("Done inserting condition " + conditions[i] + " on patient " + patientId);
+                }
+            }
+            return {error: null, result: patientAddedStatus};
+
+        }
     }
 }
 

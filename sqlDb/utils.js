@@ -66,7 +66,7 @@ const addPatient = async(patient) => {
     let stream = await sql.connect(config);
     logger.info("success connecting to stream\n");
 
-    let current_query = "INSERT INTO Patients ( first_name, last_name, age, gender, created_at, trial_start, trial_end, given_vaccines_ids, doses_received)" + 
+    let current_query = "INSERT INTO Patients ( first_name, last_name, age, gender, created_at, trial_start, trial_end, doses_received)" + 
                 "VALUES (" +  
                         "'" + patient.first_name + "'," +
                         "'" + patient.last_name + "'," +
@@ -75,12 +75,13 @@ const addPatient = async(patient) => {
                             "'" + Date.now().toString() + "'," +
                             "'" + patient.trial_start.toString() + "'," +
                             "'" + patient.trial_end.toString() + "'," +
-                            patient.given_vaccine + ',' + 
                             patient.dose_number + ')';
                         
     logger.info("Querying for " + current_query);
     let response = await stream.request().query(current_query);
     if(response && response.rowsAffected && response.rowsAffected[0] && response.rowsAffected[0] > 0) {
+        logger.info("iubire");
+        logger.info(response);
         return "success";
     } else {
         logger.error("Something went wrong adding a new patient");
@@ -96,6 +97,9 @@ const deletePatient = async(patientID) => {
     logger.info("Querying for " + current_query);
     let response = await stream.request().query(current_query);
     if(response && response.rowsAffected && response.rowsAffected[0] && response.rowsAffected[0] > 0) {
+        let current_query = "DELETE FROM PatientCondition where patient_id=" + patientID;
+        let response = await stream.request().query(current_query);
+
         return "success";
     } else {
         logger.error("Something went wrong deleting the patient");
@@ -117,6 +121,19 @@ const getComplexData = async(query) => {
     return data;
 }
 
+const executeComplexQuery = async(query) => {
+    let stream = await sql.connect(config);
+    logger.info("success connecting to stream\n");
+    let current_query = query;
+    logger.info("querying for " + current_query);
+    let data = await stream.request().query(current_query);
+    if(!data || !data.recordset) {
+        logger.error("No data returned");
+        return {};
+    }
+    data = data.recordset;
+    return data;
+}
 
 
-module.exports = {getTest,updatePatient,getAdminCreds,getTable,addPatient,deletePatient,getComplexData};
+module.exports = {getTest,updatePatient,getAdminCreds,getTable,addPatient,deletePatient,getComplexData,executeComplexQuery};

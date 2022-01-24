@@ -85,6 +85,7 @@ app.get('/get', (req,res) => {
         case 'vaccines':    req.query.tableName = "Vaccines";    break;
         case 'given_vaccine': complexQuery = true; break;
         case 'patient': complexQuery = true; break;
+        case 'conditions' : req.query.tableName = "Conditions"; break;
         default: 
             logger.error('Given resource not found.');
             res.json({error: 'Incorrect or missing given resource.', response: null});
@@ -105,6 +106,7 @@ app.get('/get', (req,res) => {
 })
 
 app.get('/insert', (req,res) => {
+    logger.info("dick");
     if(!req.query || !req.query.resource) { 
         logger.error("Invalid request");
         res.json({error: 'Invalid resource given', response: null});
@@ -112,6 +114,7 @@ app.get('/insert', (req,res) => {
     }
     switch(req.query.resource) {
         case 'patient': 
+            logger.info("fuck");
             req_handlers.addPatient(req.query.patient).then(response => {
                 res.json(response);
             })
