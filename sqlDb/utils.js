@@ -47,19 +47,19 @@ const getAdminCreds = async(email) => {
 
 }
 
-const getPatients = async() => {
+const getTable = async(tableName) => {
     let stream = await sql.connect(config);
     logger.info("success connecting to stream\n");
 
-    let current_query = "SELECT * FROM Patients";
+    let current_query = "SELECT * FROM " + tableName;
     logger.info("Querying for " + current_query);
-    let patients = await stream.request().query(current_query);
-    if(!patients) {
+    let tableData = await stream.request().query(current_query);
+    if(!tableData) {
         logger.error('Error getting patients');
     } else {
-        patients = patients.recordset;
+        tableData = tableData.recordset;
     }
-    return patients;
+    return tableData;
 }
 
 const addPatient = async(patient) => {
@@ -102,5 +102,21 @@ const deletePatient = async(patientID) => {
     }
 }
 
+const getComplexData = async(query) => {
+    let stream = await sql.connect(config);
+    logger.info("success connecting to stream\n");
+    let current_query = query;
+    logger.info("querying for " + current_query);
+    let data = await stream.request().query(current_query);
 
-module.exports = {getTest,updatePatient,getAdminCreds,getPatients,addPatient,deletePatient};
+    if(!data || !data.recordset) {
+        logger.error("No data returned");
+        return {};
+    }
+    data = data.recordset;
+    return data;
+}
+
+
+
+module.exports = {getTest,updatePatient,getAdminCreds,getTable,addPatient,deletePatient,getComplexData};

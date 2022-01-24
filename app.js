@@ -78,17 +78,29 @@ app.get('/get', (req,res) => {
         res.json({error: 'No resource given', response: null});
         return;
     }
+    var complexQuery = false;
     switch(req.query.resource) {
-        case 'patients':
-            gettersHandler.handlePatientsGetter(req).then(response => { 
-                res.json({error: response.error, response: response.result});
-            });
-            break;
+        case 'patients': req.query.tableName = "Patients"; break;
+        case 'drugs':    req.query.tableName = "Drugs";    break;
+        case 'vaccines':    req.query.tableName = "Vaccines";    break;
+        case 'given_vaccine': complexQuery = true; break;
+        case 'patient': complexQuery = true; break;
         default: 
             logger.error('Given resource not found.');
             res.json({error: 'Incorrect or missing given resource.', response: null});
+            return;
             break;
     }
+    if(!complexQuery){
+        gettersHandler.handleTableGetter(req.query).then(response => { 
+            res.json({error: response.error, response: response.result});
+        });
+    } else {
+        gettersHandler.handleComplexGetter(req.query).then(response => { 
+            res.json({error: response.error, response: response.result});
+        });
+    }
+    
 
 })
 
