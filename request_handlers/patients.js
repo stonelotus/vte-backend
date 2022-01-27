@@ -63,4 +63,16 @@ async function updatePatient(patient){
         return {error: null, result: patientUpdatedStatus};
     }
 }
-module.exports = {addPatient, deletePatient, updatePatient};
+async function addDrug(drug) {
+    logger.info("Adding a drug..");
+    drug = JSON.parse(drug);
+    logger.info(drug);
+    var drugAddedStatus = await db_sql_helper.addDrug(drug);
+
+    if(!drugAddedStatus || drugAddedStatus != "success") {
+        return {error: 'Drug add error', result: null};
+    } else {
+        return {error:null, result: "success"};
+    }
+}
+module.exports = {addPatient, deletePatient, updatePatient, addDrug};

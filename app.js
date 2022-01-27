@@ -81,11 +81,13 @@ app.get('/get', (req,res) => {
     var complexQuery = false;
     switch(req.query.resource) {
         case 'patients': req.query.tableName = "Patients"; break;
-        case 'drugs':    req.query.tableName = "Drugs";    break;
+        case 'drugs':    complexQuery = true;    break;
         case 'vaccines':    req.query.tableName = "Vaccines";    break;
         case 'given_vaccine': complexQuery = true; break;
         case 'patient': complexQuery = true; break;
         case 'conditions' : req.query.tableName = "Conditions"; break;
+        case 'dashboard_data': complexQuery = true; break;
+        case 'side_effects': req.query.tableName = "SideEffects"; break;
         default: 
             logger.error('Given resource not found.');
             res.json({error: 'Incorrect or missing given resource.', response: null});
@@ -106,7 +108,6 @@ app.get('/get', (req,res) => {
 })
 
 app.get('/insert', (req,res) => {
-    logger.info("dick");
     if(!req.query || !req.query.resource) { 
         logger.error("Invalid request");
         res.json({error: 'Invalid resource given', response: null});
@@ -114,8 +115,14 @@ app.get('/insert', (req,res) => {
     }
     switch(req.query.resource) {
         case 'patient': 
-            logger.info("fuck");
+            logger.info("Adding a patient");
             req_handlers.addPatient(req.query.patient).then(response => {
+                res.json(response);
+            })
+            break;
+        case 'drug': 
+            logger.info("Adding a drug");
+            req_handlers.addDrug(req.query.drug).then(response => {
                 res.json(response);
             })
             break;

@@ -87,7 +87,27 @@ const addPatient = async(patient) => {
         logger.error("Something went wrong adding a new patient");
     }
 }
+const addDrug = async(drug) => {
+    let stream = await sql.connect(config);
+    logger.info("success connecting to stream\n");
 
+    let current_query = "INSERT INTO Drugs (name, expiration_date, production_date, side_effect_fix, prohibited_condition)" + 
+                "VALUES (" +  
+                        "'" + drug.name + "'," +
+                        "'" + drug.expiration_date + "'," +
+                            drug.production_date + ',' +
+                            "'" + drug.side_effect_fix + "'," + "'" + 
+                            drug.prohibited_condition + "')";
+                        
+    logger.info("Querying for " + current_query);
+    let response = await stream.request().query(current_query);
+    if(response && response.rowsAffected && response.rowsAffected[0] && response.rowsAffected[0] > 0) {
+        logger.info(response);
+        return "success";
+    } else {
+        logger.error("Something went wrong adding a new patient");
+    }
+}
 const deletePatient = async(patientID) => {
     let stream = await sql.connect(config);
     logger.info("success connecting to stream\n");
@@ -136,4 +156,4 @@ const executeComplexQuery = async(query) => {
 }
 
 
-module.exports = {getTest,updatePatient,getAdminCreds,getTable,addPatient,deletePatient,getComplexData,executeComplexQuery};
+module.exports = {getTest,updatePatient,getAdminCreds,getTable,addPatient,deletePatient,getComplexData,executeComplexQuery,addDrug};

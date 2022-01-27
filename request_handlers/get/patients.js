@@ -21,6 +21,13 @@ async function handleComplexGetter(query) {
             var patientData = await getFullPatientData(query.id);
             return {error: null, result: patientData};
             break;
+        case 'drugs': 
+             dbQuery = "select * from Drugs join Conditions on Drugs.prohibited_condition = Conditions.name"
+             break;
+        case 'dashboard_data': 
+             var dashboardData = await getDashboardData();
+             return {error: null, result: dashboardData};
+             break;
     }
     var tableData = await db_sql_helper.getComplexData(dbQuery);
     logger.info(tableData);
@@ -34,7 +41,7 @@ async function getFullPatientData(id) {
     var patientFullData = {};
     var dbQuery = "select * from Vaccines v join GivenVaccines gv on v.batch_id = gv.batch_id where gv.patient_id ='" + id + "'";
     var givenVaccines = await db_sql_helper.getComplexData(dbQuery);
-
+    
     var dbQuery = "select * from Patients where ID ='" + id + "'";
     var patient = await db_sql_helper.getComplexData(dbQuery);
 
@@ -49,5 +56,17 @@ async function getFullPatientData(id) {
 
     return patientFullData;
 
+}
+async function getDashboardData() {
+    var dbQuery;
+    dbQuery = "select top(1) count(ID) as counter, p.first_name, p.last_name from Patients p join PatientCondition pc on p.ID = pc.patient_id group by ID , p.first_name, p.last_name order by count(ID) desc";
+    var patientWithMostConditions = await db_sql_helper.getComplexData(dbQuery);
+    
+    dbQuery = "select top(1) count(c.name) as counter,c.name, c.description, pc.risk_level from Conditions c join PatientCondition pc on c.name = pc.condition group by c.name, c.description, pc.risk_level order by counter desc";
+    var mostCommonCondition = await db_sql_helper.getComplexData(dbQuery);
+    return {
+        patientWithMostConditions,
+        mostCommonCondition
+    }
 }
 module.exports = {handleTableGetter,handleComplexGetter};
