@@ -146,6 +146,12 @@ app.get('/delete', (req,res) => {
                 res.json(response);
             })
             break;
+        case 'drug': 
+            logger.info("shall delete drug", req.query);
+            req_handlers.deleteDrug(req.query.id).then(response => {
+                res.json(response);
+            })
+            break;
         default: 
             logger.error("Unknown resource on insert");
             break;

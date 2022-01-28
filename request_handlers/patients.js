@@ -75,4 +75,14 @@ async function addDrug(drug) {
         return {error:null, result: "success"};
     }
 }
-module.exports = {addPatient, deletePatient, updatePatient, addDrug};
+
+async function deleteDrug(drugId){
+    var query = "DELETE FROM Drugs where name='" + drugId + "'"; 
+    var drugDeleteStatus = await db_sql_helper.executeComplexQuery(query);
+    if(!drugDeleteStatus || drugDeleteStatus != 'success'){
+        return {error: 'Patient delete error', result: null};
+    } else {
+        return {error: null, result: drugDeleteStatus};
+    }
+}
+module.exports = {addPatient, deletePatient, updatePatient, addDrug, deleteDrug};
