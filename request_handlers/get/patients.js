@@ -1,5 +1,6 @@
 var logger = require('nlogger').logger(module);
 const db_sql_helper = require('../../sqlDb/utils');
+var _RISK_LEVEL_THRESHOLD = 2;
 
 async function handleTableGetter(query) {
     var tableName = query.tableName;
@@ -50,9 +51,11 @@ async function getFullPatientData(id) {
 
     var dbQuery = "select * from PatientCondition pc join Conditions c on pc.condition=c.name where pc.patient_id='" + id + "'";
     var patientConditions = await db_sql_helper.getComplexData(dbQuery);
+
     patientFullData = { 
         givenVaccines, patient, patientSideEffects, patientConditions
     }
+
 
     return patientFullData;
 
@@ -62,11 +65,24 @@ async function getDashboardData() {
     dbQuery = "select top(1) count(ID) as counter, p.first_name, p.last_name from Patients p join PatientCondition pc on p.ID = pc.patient_id group by ID , p.first_name, p.last_name order by count(ID) desc";
     var patientWithMostConditions = await db_sql_helper.getComplexData(dbQuery);
     
-    dbQuery = "select top(1) count(c.name) as counter,c.name, c.description, pc.risk_level from Conditions c join PatientCondition pc on c.name = pc.condition group by c.name, c.description, pc.risk_level order by counter desc";
+    dbQuery = "select top(1) count(c.name) as counter,c.name from Conditions c join PatientCondition pc on c.name = pc.condition group by c.name order by counter desc";
     var mostCommonCondition = await db_sql_helper.getComplexData(dbQuery);
+
+      
+    var dbQuery = "select * from Patients p where p.ID NOT IN(select pc.patient_id from PatientCondition pc)";
+    var patientsWithNoConditions = await db_sql_helper.getComplexData(dbQuery);
+
+    var dbQuery = "select c.name, c.description from Conditions c full join PatientCondition pc on c.name = pc.condition where c.name not in (select pc2.condition from PatientCondition pc2)";
+    var neverSeenConditions = await db_sql_helper.getComplexData(dbQuery);
+
+    var dbQuery =  "select * from Conditions c where c.name IN (select pc.condition from PatientCondition pc where pc.risk_level >" + _RISK_LEVEL_THRESHOLD + ")"; 
+    var conditionWithRiskLevelOverThreshold = await db_sql_helper.getComplexData(dbQuery);    
     return {
         patientWithMostConditions,
-        mostCommonCondition
+        mostCommonCondition,
+        patientsWithNoConditions,
+        neverSeenConditions,
+        conditionWithRiskLevelOverThreshold
     }
 }
 module.exports = {handleTableGetter,handleComplexGetter};

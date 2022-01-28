@@ -22,7 +22,7 @@ const updatePatient = async(patient) => {
     if(patient.trial_start) current_query += "trial_start='"    + patient.trial_start + "',";
     if(patient.trial_end) current_query += "trial_end='"      + patient.trial_end + "',";
     if(patient.dose_number) current_query += "doses_received='" + patient.dose_number + "',";
-    if(patient.given_vaccine) current_query += "given_vaccines_ids='" + patient.given_vaccine + "'";
+    // if(patient.given_vaccine) current_query += "given_vaccines_ids='" + patient.given_vaccine + "'";
 
     if(current_query[current_query.length-1] == ','){
         current_query = current_query.slice(0, current_query.length - 1);
@@ -61,7 +61,6 @@ const getTable = async(tableName) => {
     }
     return tableData;
 }
-
 const addPatient = async(patient) => {
     let stream = await sql.connect(config);
     logger.info("success connecting to stream\n");
